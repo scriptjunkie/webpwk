@@ -117,6 +117,7 @@
             output.set(challenge, 32 + 64);
             return output;
         }
+
         login.onclick = async () => {
             const challenge = new Uint8Array(await (await fetch('challenge')).arrayBuffer());
             //Do the login!
@@ -129,6 +130,7 @@
             loginh2.innerHTML = '';
             loginh2.appendChild(document.createTextNode(await response.text()));
         };
+
         register.onclick = async () => {
             const challenge = new Uint8Array(await (await fetch('challenge')).arrayBuffer());
             //Do the registration!
@@ -142,7 +144,6 @@
             loginh2.appendChild(document.createTextNode(await response.text()));
         };
     </script>
-
 </body>
 
 </html>

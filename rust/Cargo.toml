@@ -5,6 +5,10 @@ authors = ["Matthew Weeks <scriptjunkie@scriptjunkie.us>"]
 edition = "2024"
 license = "MIT"
 
+[profile.release]
+panic = 'abort'
+lto = true
+
 [dependencies]
 rouille = "3.6.2"
 ed25519-dalek = "2.2.0"

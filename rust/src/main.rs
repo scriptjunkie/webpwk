@@ -46,6 +46,8 @@ pub fn main() {
                 CHALLENGES.lock().ok().map(|mut set| set.remove(&challenge));
             });
             return Response::from_data("application/octet-stream", challenge).with_no_cache();
+        } else if request.raw_url() == "/" || request.raw_url() == "/index.html" {
+            return Response::from_data("text/html", include_bytes!("../../login.html"));
         }
 
         //Step 2: client sends public key, challenge, and signature, server validates crypto
@@ -86,6 +88,8 @@ pub fn main() {
             Ok(hmac) => hmac,
             Err(_) => return Response::text("Failed to create HMAC").with_status_code(500),
         };
+
+        //Registration - create new user
         if request.raw_url() == "/register" {
             //see if account exists
             if std::fs::metadata(&namehex).is_ok() {
@@ -106,6 +110,8 @@ pub fn main() {
                 return Response::text("Failed to write files").with_status_code(500);
             }
             Response::text("Registration complete")
+
+        //Login - verify user
         } else if request.raw_url() == "/login" {
             if std::fs::metadata(&namehex).is_err() {
                 return Response::text("User not registered").with_status_code(401);
@@ -124,7 +130,7 @@ pub fn main() {
                 Response::text("Failed to read files").with_status_code(500)
             }
         } else {
-            Response::empty_404()
+            Response::empty_404() //404 for everything else
         }
     });
 }
