@@ -67,21 +67,16 @@ pub fn main() {
         let challenge = &buf[32 + 64..32 + 64 + 32]; //we already know challenge is 32 bytes
 
         //Step 3: See if challenge exists and delete it if so. This ensures that the challenge is only used once.
-        if let Ok(challenge_array) = <&[u8; 32]>::try_from(challenge)
-            && !CHALLENGES
-                .lock()
-                .map(|mut set| set.remove(challenge_array))
-                .unwrap_or(false)
+        if let Ok(c) = <&[u8; 32]>::try_from(challenge)
+            && !CHALLENGES.lock().map(|mut s| s.remove(c)).unwrap_or(false)
         {
             return Response::text("Challenge not found").with_status_code(401);
         }
 
         //Step 4: Continue like a normal logon or registration treating pubkey as the password
         //name must be present for login/registration and between 1 and 64 characters long
-        let name = if let Some(n) = request.header("name")
-            && n.len() < 64
-            && n.len() > 0
-        {
+        let h = request.header("name");
+        let name = if let Some(n) = h.filter(|n| !n.is_empty() && n.len() < 64) {
             n
         } else {
             return Response::text("Missing or bad name").with_status_code(400);
