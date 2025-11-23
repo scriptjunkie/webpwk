@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login Form</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f2f5;
+    }
+    .login-container {
+        background: white;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        width: 350px;
+    }
+    h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #555;
+    }
+    input[type="text"],
+    input[type="password"] {
+        width: 100%;
+        padxding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+    input:focus {
+        outline: none;
+        border-color: #1877f2;
+        box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.2);
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        background-color: #1877f2;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 18px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+    button:hover {
+        background-color: #166fe5;
+    }
+</style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2 id="loginh2">Log In</h2>
+    
+    <div class="form-group">
+        <label for="username">Username or Email</label>
+        <input type="text" id="username" name="username" required placeholder="Enter your username or email">
+    </div>
+    
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required placeholder="Enter your password">
+    </div>
+    
+    <button type="submit" id="login">Log In</button>
+    <button type="submit" id="register">Register</button>
+</div>
+<script>
+	// OWASP Password Storage Cheat Sheet (current as of 2025) – "If FIPS-140 compliance is required, use PBKDF2 with a work factor of 600,000 or more and set with an internal hash function of HMAC-SHA-256."
+	async function proof(password, challenge, client_salt='pkpassword', iterations=600000, hash='SHA-256'){
+		// Convert password string to key bytes with PBKDF2 and get challenge as bytes too
+		const encoded = (new TextEncoder()).encode(password);
+	    challenge = typeof challenge === 'string' ? (new TextEncoder()).encode(challenge) : challenge;
+		const key = await crypto.subtle.importKey('raw', encoded, 'PBKDF2', false, ['deriveBits']);
+		const salt = (new TextEncoder()).encode(client_salt);
+	    let bits = new Uint8Array(await crypto.subtle.deriveBits({name: 'PBKDF2', iterations, salt, hash}, key, 256));
+
+	    //Convert key to PKCS8 for Ed25519 by appending to static header
+	    let pkcs8 = Uint8Array.fromBase64('MC4CAQAwBQYDK2VwBCIEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+	    pkcs8.set(new Uint8Array(bits), 16);
+	    const ed = await crypto.subtle.importKey("pkcs8", pkcs8, "Ed25519", true, ["sign"]);
+
+	    let output = new Uint8Array(32 + 64 + challenge.length);
+	    output.set(Uint8Array.fromBase64((await crypto.subtle.exportKey("jwk", ed)).x.replaceAll('-','+').replaceAll('_','/')));
+	    output.set(new Uint8Array(await crypto.subtle.sign('Ed25519', ed, challenge)), 32);
+	    output.set(challenge, 32 + 64);
+	    return output;
+	}
+    //alternative - using X25519
+    //Convert key to X25519 via clamping and encoding to PKCS8 by appending to static header
+    //bits[0] |= 7;
+	//bits[31] = 128 | (bits[31] & 0x3F);
+    //let pkcs8 = Uint8Array.fromBase64( 'MC4CAQAwBQYDK2VuBCIEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+    //pkcs8.set(new Uint8Array(bits), 16);MC4CAQAwBQYDK2VwBCIEIKeTfR
+    //const x25519 = await crypto.subtle.importKey("pkcs8", pkcs8, "X25519", true, ["deriveKey"]);
+    //console.log(await crypto.subtle.exportKey("jwk", x25519) );
+	login.onclick=async ()=>{
+		const challenge = JSON.stringify({domain:document.domain, time:(new Date()).getTime(), user: username.value})
+		//Do the login!
+		let response = await fetch('login', {method: 'POST', body: await proof(password.value, challenge)});
+		//show the result
+		loginh2.innerHTML = '';
+		loginh2.appendChild(document.createTextNode(await response.text()));
+	};
+	register.onclick=async ()=>{
+		const challenge = JSON.stringify({domain:document.domain, time:(new Date()).getTime(), user: username.value})
+		//Do the registration!
+		let response = await fetch('register', {method: 'POST', body: await proof(password.value, challenge)});
+		//show the result
+		loginh2.innerHTML = '';
+		loginh2.appendChild(document.createTextNode(await response.text()));
+	};
+</script>
+
+</body>
+</html>
