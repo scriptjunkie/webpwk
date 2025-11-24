@@ -1,5 +1,7 @@
 // This function is the primary function to generate password derived key and create a proof of possession
-// OWASP Password Storage Cheat Sheet (current as of 2025) – "If FIPS-140 compliance is required, use PBKDF2 with a work factor of 600,000 or more and set with an internal hash function of HMAC-SHA-256."
+// Default iterations are in accordance with OWASP guidelines. OWASP Password Storage Cheat Sheet (current as of 2025):
+// "If FIPS-140 compliance is required, use PBKDF2 with a work factor of 600,000 or more and set with an internal hash
+// function of HMAC-SHA-256."
 export async function proof(password, challenge, client_salt = 'pkpassword', iterations = 600000, hash = 'SHA-256') {
     // Convert password string to key bytes with PBKDF2 and get challenge as bytes too
     const encoded = (new TextEncoder()).encode(password);
@@ -20,5 +22,3 @@ export async function proof(password, challenge, client_salt = 'pkpassword', ite
     output.set(challenge, 32 + 64);
     return output;
 }
-export const version = "1.0.0";
-

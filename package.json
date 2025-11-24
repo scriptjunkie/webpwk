@@ -1,6 +1,6 @@
 {
   "name": "webpwk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Web Password-Based Keying: Authentication that defends against exposing passwords in use or in transit, similar to how hashing defends against exposing passwords at rest.",
   "main": "index.esm.js",
   "repository": {
