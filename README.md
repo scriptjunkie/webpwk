@@ -25,6 +25,8 @@ const challenge = new Uint8Array(await (await fetch('challenge')).arrayBuffer())
 let response = await fetch('login', {method: 'POST', body: await proof(password.value, challenge)});
 ```
 
+This example simply receives the challenge as 32 binary bytes then sends the authentication data in 128 bytes of binary. It's small, but a good habit where possible to save bytes, milliseconds, and kWh. If, however, you need to send the data as text, embed in JSON, etc., call the toBase64() method on the Uint8Array returned by proof(): `(await proof(password.value, challenge)).toBase64()` and then decode the base64 string on the server before the validation code.
+
 ### Server side changes
 
 See example code in the server folders, e.g. [rust](https://github.com/scriptjunkie/webpwk/tree/master/rust) and [python](https://github.com/scriptjunkie/webpwk/tree/master/python).
