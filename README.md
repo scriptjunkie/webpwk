@@ -6,13 +6,30 @@ Authentication that defends against exposing passwords in use or in transit, sim
 
 Any website that keeps unhashed passwords would be mocked as negligent, since password databases have been exposed hundreds or thousands of times, including for many of the biggest websites in the world.
 
-Unfortunately, sites still hold passwords in memory during authentication, and many breaches have exposed passwords through memory disclosures, like Heartbleed and exposed crash dumps, or passive interception of requests after decryption.
+Unfortunately, sites still receive and hold passwords in memory during authentication, and many breaches have exposed passwords through memory disclosures, like Heartbleed and exposed crash dumps, or passive interception of requests after decryption.
 
 This is a curious vulnerability, as resolving it does not require any user-visible changes, and with all modern browsers, it also no longer requires complex code on either the client or the server.
 
-This project implements such a system, with client implementation in a few lines of JavaScript, and simple server implementations in both Rust and Python.
+This project implements such a system, with client implementation in a few lines of JavaScript ( < 1kB minified, < 500 bytes gzipped), and example server implementations in both Rust and Python at [https://github.com/scriptjunkie/webpwk](https://github.com/scriptjunkie/webpwk).
 
-## Overview
+## Usage
+
+### Client side changes
+Without NPM, simply copy the proof function into your code and use as demonstrated in [login.html](login.html).
+
+Using NPM, add the webpwk package to your project dependencies. Then in your JavaScript code, import the package and upon submitting a login, instead of submitting the password, get a challenge from the server and submit the result of `await proof(password, challenge)`.
+
+```javascript
+import { proof } from 'webpwk';
+const challenge = new Uint8Array(await (await fetch('challenge')).arrayBuffer());
+let response = await fetch('login', {method: 'POST', body: await proof(password.value, challenge)});
+```
+
+### Server side changes
+
+See example code in the server folders, e.g. [rust](https://github.com/scriptjunkie/webpwk/tree/master/rust) and [python](https://github.com/scriptjunkie/webpwk/tree/master/python).
+
+## Implementation Overview
 
 Instead of sending passwords directly over the network, webpwk uses a challenge-response authentication protocol with Ed25519 asymmetric cryptographic signatures:
 
@@ -27,6 +44,8 @@ This ensures passwords never traverse the network or are held in memory on the s
 
 ## Running the Rust Server
 
+[Rust server folder](https://github.com/scriptjunkie/webpwk/tree/master/rust)
+
 ```bash
 cd rust
 cargo run
@@ -35,6 +54,8 @@ cargo run
 Then open `http://127.0.0.1:2203` in your browser.
 
 ## Running the Python Server
+
+[Python server folder](https://github.com/scriptjunkie/webpwk/tree/master/python)
 
 ```bash
 cd python

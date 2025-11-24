@@ -1,0 +1,28 @@
+{
+  "name": "webpwk",
+  "version": "1.0.0",
+  "description": "Web Password-Based Keying: Authentication that defends against exposing passwords in use or in transit, similar to how hashing defends against exposing passwords at rest.",
+  "main": "index.esm.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scriptjunkie/webpwk.git"
+  },
+  "scripts": {
+    "build": "esbuild index.js --bundle --platform=neutral --format=esm --minify --outfile=index.esm.js",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "passwords",
+    "authentication",
+    "ed25519"
+  ],
+  "author": "Matt Weeks <scriptjunkie@scriptjunkie.us>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/scriptjunkie/webpwk/issues"
+  },
+  "homepage": "https://github.com/scriptjunkie/webpwk#readme",
+  "devDependencies": {
+    "esbuild": "^0.27.0"
+  }
+}
